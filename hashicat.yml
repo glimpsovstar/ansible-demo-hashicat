@@ -6,7 +6,7 @@
     placeholder: "placekitten.com"
     width: 400
     height: 600
-    prefix: djoo_is_da_man
+    prefix: "ARTs Demo HashiCat"
 
   tasks:
     - name: Install httpd
