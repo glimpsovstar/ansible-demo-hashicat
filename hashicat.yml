@@ -3,10 +3,10 @@
   become: yes
 
   vars:
-    placeholder: "placecats.com"
+    placeholder: "picsum.photos"
     width: 400
     height: 600
-    prefix: "ARTs Demo HashiCat"
+    prefix: "Terraform/Ansible Demo Picsum Photos"
 
   tasks:
     - name: Wait for SSH connection to become available
