@@ -67,55 +67,10 @@
       ignore_errors: yes
       when: connection_wait is succeeded
 
-    - name: Get AWS public IP from metadata service
-      uri:
-        url: http://169.254.169.254/latest/meta-data/public-ipv4
-        return_content: yes
-        timeout: 5
-      register: aws_public_ip
-      ignore_errors: yes
-      when: connection_wait is succeeded
-
-    - name: Get Azure public IP from metadata service
-      uri:
-        url: http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/publicIpAddress?api-version=2021-02-01&format=text
-        return_content: yes
-        timeout: 5
-        headers:
-          Metadata: "true"
-      register: azure_public_ip
-      ignore_errors: yes
-      when: 
-        - connection_wait is succeeded
-        - aws_public_ip is failed
-
-    - name: Debug Azure response
+    - name: Display webpage availability message
       debug:
-        msg: "Azure response: '{{ azure_public_ip.content }}' (length: {{ azure_public_ip.content | length }})"
+        msg: "The webpage is available at http://{{ ansible_host | default(inventory_hostname) }}"
       when: 
         - connection_wait is succeeded
-        - azure_public_ip is succeeded
-
-    - name: Display webpage availability message (AWS)
-      debug:
-        msg: "The webpage is available at http://{{ aws_public_ip.content | trim }}"
-      when: 
-        - connection_wait is succeeded
-        - aws_public_ip is succeeded
-        - (aws_public_ip.content | trim) != ""
-
-    - name: Display webpage availability message (Azure)
-      debug:
-        msg: "The webpage is available at http://{{ azure_public_ip.content | trim }}"
-      when: 
-        - connection_wait is succeeded
-        - azure_public_ip is succeeded
-        - (azure_public_ip.content | trim) != ""
-
-    - name: Display webpage availability message (fallback)
-      debug:
-        msg: "The webpage is available at http://{{ ansible_default_ipv4.address }}"
-      when: 
-        - connection_wait is succeeded
-        - (aws_public_ip is failed or (aws_public_ip.content | trim) == "")
-        - (azure_public_ip is failed or (azure_public_ip.content | trim) == "")
+        - httpd_status is succeeded
+        - httpd_status.stdout == "active"
