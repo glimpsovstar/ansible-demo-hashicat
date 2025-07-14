@@ -69,7 +69,7 @@
 
     - name: Display webpage availability message
       debug:
-        msg: "The webpage is available at http://{{ ansible_default_ipv4.address }}"
+        msg: "The webpage is available at http://{{ external_ip.content | trim }}"
       when: 
         - connection_wait is succeeded
         - httpd_status.stdout == "active"
