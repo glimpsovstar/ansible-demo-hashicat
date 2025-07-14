@@ -67,9 +67,34 @@
       ignore_errors: yes
       when: connection_wait is succeeded
 
-    - name: Display webpage availability message
-      debug:
-        msg: "The webpage is available at http://{{ external_ip.content | trim }}"
+    - name: Get AWS public IP from metadata service
+      uri:
+        url: http://169.254.169.254/latest/meta-data/public-ipv4
+        return_content: yes
+        timeout: 5
+      register: aws_public_ip
+      ignore_errors: yes
+      when: connection_wait is succeeded
+
+    - name: Get Azure public IP from metadata service
+      uri:
+        url: http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/publicIpAddress?api-version=2021-02-01&format=text
+        return_content: yes
+        timeout: 5
+        headers:
+          Metadata: "true"
+      register: azure_public_ip
+      ignore_errors: yes
       when: 
         - connection_wait is succeeded
-        - httpd_status.stdout == "active"
+        - aws_public_ip is failed
+
+    - name: Set public IP fact
+      set_fact:
+        public_ip: "{{ (aws_public_ip.content | default('')) | trim or (azure_public_ip.content | default('')) | trim or ansible_default_ipv4.address }}"
+      when: connection_wait is succeeded
+
+    - name: Display webpage availability message
+      debug:
+        msg: "The webpage is available at http://{{ public_ip }}"
+      when: connection_wait is succeeded
