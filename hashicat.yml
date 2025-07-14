@@ -60,3 +60,10 @@
         state: enabled
         immediate: true
         permanent: true
+        
+    - name: Display webpage availability message
+      debug:
+        msg: "The webpage is available at http://{{ ansible_default_ipv4.address }}"
+      when: 
+        - connection_wait is succeeded
+        - ansible_facts['services']['httpd.service']['state'] == 'running'
