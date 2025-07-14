@@ -89,24 +89,33 @@
         - connection_wait is succeeded
         - aws_public_ip is failed
 
-    - name: Display webpage availability message
+    - name: Debug Azure response
+      debug:
+        msg: "Azure response: '{{ azure_public_ip.content }}' (length: {{ azure_public_ip.content | length }})"
+      when: 
+        - connection_wait is succeeded
+        - azure_public_ip is succeeded
+
+    - name: Display webpage availability message (AWS)
       debug:
         msg: "The webpage is available at http://{{ aws_public_ip.content | trim }}"
       when: 
         - connection_wait is succeeded
         - aws_public_ip is succeeded
+        - (aws_public_ip.content | trim) != ""
 
-    - name: Display webpage availability message
+    - name: Display webpage availability message (Azure)
       debug:
         msg: "The webpage is available at http://{{ azure_public_ip.content | trim }}"
       when: 
         - connection_wait is succeeded
         - azure_public_ip is succeeded
+        - (azure_public_ip.content | trim) != ""
 
     - name: Display webpage availability message (fallback)
       debug:
         msg: "The webpage is available at http://{{ ansible_default_ipv4.address }}"
       when: 
         - connection_wait is succeeded
-        - aws_public_ip is failed
-        - azure_public_ip is failed
+        - (aws_public_ip is failed or (aws_public_ip.content | trim) == "")
+        - (azure_public_ip is failed or (azure_public_ip.content | trim) == "")
